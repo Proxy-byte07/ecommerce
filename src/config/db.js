@@ -14,7 +14,7 @@ const connectDB = async () => {
     return mongoose.connection;
   }
 
-  let connectionUri = env.mongoUri || process.env.MONGODB_URI;
+  let connectionUri = env.mongoUri || process.env.MONGODB_URI || process.env.MONGO_URL || process.env.DATABASE_URL;
 
   if (connectionUri) {
     try {

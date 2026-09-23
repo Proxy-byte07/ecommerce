@@ -7,7 +7,7 @@ dotenv.config({ path: path.join(__dirname, "../../.env") });
 const env = {
   port: parseInt(process.env.PORT, 10) || 5001,
   nodeEnv: process.env.NODE_ENV || "development",
-  mongoUri: process.env.MONGODB_URI || "",
+  mongoUri: process.env.MONGODB_URI || process.env.MONGO_URL || process.env.DATABASE_URL || process.env.MONGODB_URL || "",
   jwtSecret: process.env.JWT_SECRET || "default_jwt_secret_dev_key_only",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
 };
