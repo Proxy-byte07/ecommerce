@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexCommerce & Inventory Management</title>
+  <meta name="description" content="Modern, light-themed e-commerce storefront and inventory audit management system.">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Header & Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-area" onclick="app.switchTab('catalog')">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">ApexCommerce</span>
+          <span class="brand-badge"><span class="pulse-dot"></span> Live Backend</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <button id="tab-btn-catalog" class="nav-btn active" onclick="app.switchTab('catalog')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          Catalog
+        </button>
+        <button id="tab-btn-orders" class="nav-btn" onclick="app.switchTab('orders')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          My Orders
+        </button>
+        <button id="tab-btn-admin" class="nav-btn admin-only" onclick="app.switchTab('admin')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          Admin Console
+        </button>
+      </nav>
+
+      <!-- Right Actions: User Profile & Cart Button -->
+      <div class="header-actions">
+        <div id="user-badge" class="user-profile-pill" onclick="app.openAuthModal()">
+          <span id="user-role-tag" class="role-chip guest">Guest</span>
+          <span id="user-name-display" class="user-name">Sign In</span>
+        </div>
+
+        <button id="logout-btn" class="btn btn-secondary" style="display: none; font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="app.logout()">
+          Sign Out
+        </button>
+
+        <button id="cart-drawer-toggle" class="cart-btn" onclick="app.toggleCartDrawer()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-label">Cart</span>
+          <span id="cart-count-badge" class="cart-badge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-layout">
+
+    <!-- ─── STOREFRONT CATALOG VIEW ────────────────────────────────────────────── -->
+    <section id="view-catalog" class="view-section active">
+      <!-- Hero Banner -->
+      <div class="hero-banner">
+        <div class="hero-content">
+          <span class="hero-tag">✨ Light Modern Interface</span>
+          <h1 class="hero-title">Premium Goods & Intelligent Stock Tracking</h1>
+          <p class="hero-subtitle">Browse realistic products backed by zero-config MongoDB & automated inventory audit logs.</p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span class="stat-number" id="stat-product-count">0</span>
+            <span class="stat-label">Products Active</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number warning" id="stat-low-stock-count">0</span>
+            <span class="stat-label">Low Stock Alerts</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filters Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="catalog-search" placeholder="Search by product name, SKU or keywords..." oninput="app.handleSearchInput(this.value)">
+        </div>
+
+        <div class="category-filters" id="category-pills">
+          <button class="pill active" data-category="" onclick="app.filterCategory('')">All Items</button>
+          <button class="pill" data-category="electronics" onclick="app.filterCategory('electronics')">⚡ Electronics</button>
+          <button class="pill" data-category="apparel" onclick="app.filterCategory('apparel')">👕 Apparel</button>
+          <button class="pill" data-category="home" onclick="app.filterCategory('home')">🏡 Home & Kitchen</button>
+          <button class="pill" data-category="fitness" onclick="app.filterCategory('fitness')">🧘 Fitness</button>
+        </div>
+      </div>
+
+      <!-- Product Catalog Grid -->
+      <div id="product-grid" class="product-grid">
+        <!-- Dynamic Cards Inserted Here -->
+      </div>
+    </section>
+
+    <!-- ─── CUSTOMER ORDERS VIEW ───────────────────────────────────────────────── -->
+    <section id="view-orders" class="view-section">
+      <div class="page-header">
+        <div>
+          <h2>My Order History</h2>
+          <p>Track your placed orders, shipping addresses, and live fulfillment statuses.</p>
+        </div>
+        <button class="btn btn-secondary" onclick="app.loadCustomerOrders()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+          Refresh Orders
+        </button>
+      </div>
+
+      <div id="customer-orders-container" class="orders-list">
+        <!-- Dynamic Orders List -->
+      </div>
+    </section>
+
+    <!-- ─── ADMIN CONSOLE VIEW ─────────────────────────────────────────────────── -->
+    <section id="view-admin" class="view-section">
+      <div class="page-header">
+        <div>
+          <h2>Admin Control Center <span class="badge badge-admin">RBAC Restricted</span></h2>
+          <p>Manage product stock levels, view real-time inventory audit logs, and fulfill orders.</p>
+        </div>
+        <button class="btn btn-primary" onclick="app.openAddProductModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add New Product
+        </button>
+      </div>
+
+      <!-- Admin Sub-tabs -->
+      <div class="admin-tabs">
+        <button id="admin-subtab-stock" class="admin-tab-btn active" onclick="app.switchAdminSubtab('stock')">Inventory Stock Levels</button>
+        <button id="admin-subtab-audit" class="admin-tab-btn" onclick="app.switchAdminSubtab('audit')">Audit Logs & History</button>
+        <button id="admin-subtab-orders" class="admin-tab-btn" onclick="app.switchAdminSubtab('orders')">Manage All Customer Orders</button>
+      </div>
+
+      <!-- Admin Subtab 1: Stock Levels Table -->
+      <div id="admin-panel-stock" class="admin-panel active">
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Product / SKU</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Current Stock</th>
+                <th>Threshold</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-stock-tbody">
+              <!-- Dynamic Rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Admin Subtab 2: Audit Logs -->
+      <div id="admin-panel-audit" class="admin-panel">
+        <div class="toolbar" style="margin-bottom: 1rem;">
+          <div class="category-filters">
+            <button class="pill active" data-audit-type="" onclick="app.filterAuditLogs('')">All Events</button>
+            <button class="pill" data-audit-type="RESTOCK" onclick="app.filterAuditLogs('RESTOCK')">Restocks</button>
+            <button class="pill" data-audit-type="SALE" onclick="app.filterAuditLogs('SALE')">Sales</button>
+            <button class="pill" data-audit-type="MANUAL_ADJUSTMENT" onclick="app.filterAuditLogs('MANUAL_ADJUSTMENT')">Manual Adjustments</button>
+            <button class="pill" data-audit-type="CANCELLATION_RESTORE" onclick="app.filterAuditLogs('CANCELLATION_RESTORE')">Restorations</button>
+          </div>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>SKU / Product ID</th>
+                <th>Event Type</th>
+                <th>Change</th>
+                <th>Prev ➔ New</th>
+                <th>Reason / Reference</th>
+              </tr>
+            </thead>
+            <tbody id="admin-audit-tbody">
+              <!-- Dynamic Audit Rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Admin Subtab 3: Manage All Orders -->
+      <div id="admin-panel-orders" class="admin-panel">
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Order Number</th>
+                <th>Customer</th>
+                <th>Total Price</th>
+                <th>Items</th>
+                <th>Status</th>
+                <th>Update Status</th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders-tbody">
+              <!-- Dynamic Orders Rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ─── CART SLIDE-OVER DRAWER ─────────────────────────────────────────────── -->
+  <div id="cart-drawer-overlay" class="drawer-overlay" onclick="app.toggleCartDrawer(false)"></div>
+  <aside id="cart-drawer" class="cart-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <h3>Your Shopping Cart</h3>
+      </div>
+      <button class="close-btn" onclick="app.toggleCartDrawer(false)">&times;</button>
+    </div>
+
+    <div class="drawer-body">
+      <div id="cart-items-container" class="cart-items-list">
+        <!-- Dynamic Cart Items -->
+      </div>
+
+      <div id="checkout-form-section" class="checkout-section">
+        <h4 class="section-subtitle">Shipping Address</h4>
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <input type="text" id="ship-street" placeholder="Street Address" value="742 Evergreen Terrace">
+          </div>
+          <div class="form-group">
+            <input type="text" id="ship-city" placeholder="City" value="Springfield">
+          </div>
+          <div class="form-group">
+            <input type="text" id="ship-state" placeholder="State" value="OR">
+          </div>
+          <div class="form-group">
+            <input type="text" id="ship-zip" placeholder="Zip Code" value="97477">
+          </div>
+          <div class="form-group">
+            <select id="ship-payment">
+              <option value="CREDIT_CARD">Credit Card</option>
+              <option value="PAYPAL">PayPal</option>
+              <option value="STRIPE">Stripe Express</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span id="cart-subtotal" class="subtotal-val">$0.00</span>
+      </div>
+      <p class="shipping-note">Free standard shipping on all zero-config demo orders.</p>
+      <button id="checkout-submit-btn" class="btn btn-primary btn-block" onclick="app.handleCheckout()">
+        Complete Checkout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ─── AUTHENTICATION MODAL ───────────────────────────────────────────────── -->
+  <div id="auth-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Account Sign In / Register</h3>
+        <button class="close-btn" onclick="app.closeAuthModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Quick Login Presets -->
+        <div class="quick-presets">
+          <span class="presets-label">⚡ 1-Click Demo Profiles:</span>
+          <div class="preset-buttons">
+            <button class="btn btn-preset customer-preset" onclick="app.quickLogin('customer')">
+              👤 Login as Customer
+            </button>
+            <button class="btn btn-preset admin-preset" onclick="app.quickLogin('admin')">
+              🛡️ Login as Admin
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-divider"><span>OR ENTER CREDENTIALS</span></div>
+
+        <!-- Auth Form -->
+        <form id="auth-form" onsubmit="app.handleAuthSubmit(event)">
+          <div class="auth-tabs">
+            <button type="button" id="auth-tab-login" class="auth-tab active" onclick="app.toggleAuthMode('login')">Log In</button>
+            <button type="button" id="auth-tab-register" class="auth-tab" onclick="app.toggleAuthMode('register')">Create Account</button>
+          </div>
+
+          <div id="register-fields" class="register-only" style="display: none;">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="auth-name" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+              <label>Account Role</label>
+              <select id="auth-role">
+                <option value="customer">Customer</option>
+                <option value="admin">Administrator</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="auth-email" required placeholder="user@example.com">
+          </div>
+
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="auth-password" required placeholder="••••••••">
+          </div>
+
+          <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-block">Sign In</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ADJUST STOCK MODAL ─────────────────────────────────────────────────── -->
+  <div id="adjust-stock-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Adjust Product Inventory</h3>
+        <button class="close-btn" onclick="app.closeAdjustModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="adjust-stock-form" onsubmit="app.handleStockAdjustment(event)">
+          <input type="hidden" id="adjust-product-id">
+          <div class="form-group">
+            <label>Target Product</label>
+            <input type="text" id="adjust-product-title" readonly class="readonly-input">
+          </div>
+          <div class="form-group">
+            <label>Quantity Change (+ for Restock, - for Reduction)</label>
+            <input type="number" id="adjust-quantity" required value="5" step="1">
+          </div>
+          <div class="form-group">
+            <label>Adjustment Reason (Required for Audit Trail)</label>
+            <input type="text" id="adjust-reason" required placeholder="e.g., Supplier shipment received / Damaged goods written off">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Submit Stock Adjustment</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ADD/EDIT PRODUCT MODAL ─────────────────────────────────────────────── -->
+  <div id="product-modal" class="modal-backdrop">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3 id="product-modal-title">Add New Product</h3>
+        <button class="close-btn" onclick="app.closeProductModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="product-form" onsubmit="app.handleSaveProduct(event)">
+          <input type="hidden" id="edit-product-id">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>SKU (Stock Keeping Unit)</label>
+              <input type="text" id="prod-sku" required placeholder="TECH-HEAD-100">
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select id="prod-category" required>
+                <option value="electronics">Electronics</option>
+                <option value="apparel">Apparel</option>
+                <option value="home">Home & Kitchen</option>
+                <option value="fitness">Fitness</option>
+              </select>
+            </div>
+            <div class="form-group span-2">
+              <label>Product Title</label>
+              <input type="text" id="prod-title" required placeholder="Wireless Noise-Cancelling Headphones">
+            </div>
+            <div class="form-group">
+              <label>Price ($)</label>
+              <input type="number" id="prod-price" required step="0.01" min="0.01" placeholder="99.99">
+            </div>
+            <div class="form-group">
+              <label>Initial Stock Quantity</label>
+              <input type="number" id="prod-stock" required min="0" placeholder="25">
+            </div>
+            <div class="form-group">
+              <label>Min Stock Warning Threshold</label>
+              <input type="number" id="prod-threshold" required min="1" value="5">
+            </div>
+            <div class="form-group span-2">
+              <label>Product Description</label>
+              <textarea id="prod-desc" rows="3" required placeholder="Detailed item features and specifications..."></textarea>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Save Product Catalog Item</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Bundle -->
+  <script src="app.js"></script>
+</body>
+</html>

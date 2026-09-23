@@ -1,0 +1,42 @@
+{
+  "name": "ecommerce-inventory-backend",
+  "version": "1.0.0",
+  "description": "Intermediate-level E-Commerce and Inventory Management Backend API with JWT Auth, RBAC, Cart/Order workflows, and Inventory Audit",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node scripts/seed.js",
+    "test:workflow": "node scripts/test-workflow.js",
+    "test": "node scripts/test-workflow.js"
+  },
+  "keywords": [
+    "ecommerce",
+    "inventory-management",
+    "express",
+    "mongodb",
+    "mongoose",
+    "jwt",
+    "rbac",
+    "clean-architecture",
+    "swagger",
+    "rest-api"
+  ],
+  "author": "proxy-byte",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.5",
+    "morgan": "^1.10.0",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.1.3",
+    "nodemon": "^3.1.9"
+  }
+}
