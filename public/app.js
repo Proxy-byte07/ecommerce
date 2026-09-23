@@ -339,7 +339,7 @@ class ApexApp {
         <h3 class="product-title">${prod.title}</h3>
         <p class="product-desc">${prod.description}</p>
         <div class="card-footer">
-          <span class="product-price">$${prod.price.toFixed(2)}</span>
+          <span class="product-price">₹${prod.price.toFixed(2)}</span>
           <button class="btn-add-cart" ${prod.stockQuantity === 0 ? "disabled" : ""} onclick="app.addToCart('${prod._id}')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             Add to Cart
@@ -430,7 +430,7 @@ class ApexApp {
     const totalCount = this.cart.items ? this.cart.items.reduce((acc, item) => acc + item.quantity, 0) : 0;
     countBadge.textContent = totalCount;
 
-    subtotalEl.textContent = `$${(this.cart.subtotal || 0).toFixed(2)}`;
+    subtotalEl.textContent = `₹${(this.cart.subtotal || 0).toFixed(2)}`;
 
     if (!this.cart.items || this.cart.items.length === 0) {
       container.innerHTML = `
@@ -449,7 +449,7 @@ class ApexApp {
       itemEl.innerHTML = `
         <div class="cart-item-info">
           <h4>${prod.title || "Product"}</h4>
-          <span class="cart-item-price">$${(item.price || 0).toFixed(2)} each</span>
+          <span class="cart-item-price">₹${(item.price || 0).toFixed(2)} each</span>
         </div>
         <div class="quantity-controls">
           <button class="qty-btn" onclick="app.updateCartQuantity('${prod._id}', ${item.quantity - 1})">-</button>
@@ -566,13 +566,13 @@ class ApexApp {
         <div style="margin-bottom: 1rem;">
           <span style="font-size: 0.8rem; font-weight: 700; color: #475569;">ITEMS PURCHASED:</span>
           <ul style="list-style: none; margin-top: 0.5rem;">
-            ${ord.items.map(i => `<li style="font-size: 0.9rem; margin-bottom: 4px;">• <strong>${i.title}</strong> x ${i.quantity} — $${(i.price * i.quantity).toFixed(2)}</li>`).join("")}
+            ${ord.items.map(i => `<li style="font-size: 0.9rem; margin-bottom: 4px;">• <strong>${i.title}</strong> x ${i.quantity} — ₹${(i.price * i.quantity).toFixed(2)}</li>`).join("")}
           </ul>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; background: #f8fafc; padding: 0.75rem 1rem; border-radius: 8px;">
           <span>Shipping to: <strong>${ord.shippingAddress?.street}, ${ord.shippingAddress?.city}</strong></span>
-          <span style="font-weight: 800; font-size: 1.1rem;">Total: $${ord.totalAmount.toFixed(2)}</span>
+          <span style="font-weight: 800; font-size: 1.1rem;">Total: ₹${ord.totalAmount.toFixed(2)}</span>
         </div>
       `;
       container.appendChild(card);
@@ -621,7 +621,7 @@ class ApexApp {
           <span style="font-size: 0.75rem; color: #64748b;">${p.sku}</span>
         </td>
         <td style="text-transform: capitalize;">${p.category}</td>
-        <td>$${p.price.toFixed(2)}</td>
+        <td>₹${p.price.toFixed(2)}</td>
         <td><strong style="font-size: 1rem;">${p.stockQuantity}</strong></td>
         <td>${p.minStockThreshold}</td>
         <td>${statusBadge}</td>
@@ -729,7 +729,7 @@ class ApexApp {
       tr.innerHTML = `
         <td><strong>#${ord.orderNumber}</strong></td>
         <td>${ord.user?.name || "Customer"} <br><span style="font-size: 0.75rem; color: #64748b;">${ord.user?.email || ""}</span></td>
-        <td><strong>$${ord.totalAmount.toFixed(2)}</strong></td>
+        <td><strong>₹${ord.totalAmount.toFixed(2)}</strong></td>
         <td>${ord.items.length} item(s)</td>
         <td><span class="role-chip customer">${ord.orderStatus}</span></td>
         <td>

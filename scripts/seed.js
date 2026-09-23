@@ -6,6 +6,99 @@ const Cart = require("../src/models/Cart");
 const Order = require("../src/models/Order");
 const InventoryAudit = require("../src/models/InventoryAudit");
 
+const productsData = [
+  {
+    sku: "TECH-HEAD-001",
+    title: "Wireless ANC Over-Ear Headphones",
+    description: "Studio-grade wireless headphones with hybrid active noise cancellation, transparency mode, and 40-hour battery life.",
+    price: 14999.00,
+    category: "electronics",
+    stockQuantity: 45,
+    minStockThreshold: 5,
+    tags: ["audio", "bluetooth", "noise-cancelling"],
+  },
+  {
+    sku: "TECH-KEY-002",
+    title: "Mechanical Tenkeyless Gaming Keyboard",
+    description: "Hot-swappable tactile mechanical keyboard with custom RGB backlighting and PBT double-shot keycaps.",
+    price: 6999.00,
+    category: "electronics",
+    stockQuantity: 28,
+    minStockThreshold: 5,
+    tags: ["gaming", "keyboard", "rgb"],
+  },
+  {
+    sku: "TECH-MOUSE-003",
+    title: "Ultralight Wireless Gaming Mouse",
+    description: "Ergonomic 58g gaming mouse with 26K DPI optical sensor and ultra-flexible paracord cable.",
+    price: 4499.00,
+    category: "electronics",
+    stockQuantity: 4,
+    minStockThreshold: 5,
+    tags: ["gaming", "mouse", "wireless"],
+  },
+  {
+    sku: "APPAREL-HOOD-001",
+    title: "Heavyweight Cotton Fleece Hoodie",
+    description: "Premium 450 GSM organic cotton oversized hoodie with ribbed cuffs and double-layered hood.",
+    price: 3499.00,
+    category: "apparel",
+    stockQuantity: 60,
+    minStockThreshold: 10,
+    tags: ["apparel", "hoodie", "cotton"],
+  },
+  {
+    sku: "APPAREL-TEE-002",
+    title: "Minimalist Crewneck T-Shirt 3-Pack",
+    description: "Breathable 100% combed cotton everyday crewneck t-shirts in neutral earth tones.",
+    price: 1999.00,
+    category: "apparel",
+    stockQuantity: 2,
+    minStockThreshold: 10,
+    tags: ["apparel", "tshirt", "basics"],
+  },
+  {
+    sku: "HOME-COFFEE-001",
+    title: "Precision Pour-Over Coffee Kettle",
+    description: "Matte black stainless steel gooseneck kettle with built-in analog thermometer for artisanal brew control.",
+    price: 2999.00,
+    category: "home",
+    stockQuantity: 18,
+    minStockThreshold: 4,
+    tags: ["coffee", "kitchen", "kettle"],
+  },
+  {
+    sku: "HOME-ROASTER-002",
+    title: "Cast Iron Dutch Oven 6-Quart",
+    description: "Enameled cast iron dutch oven with superior heat retention and tight-fitting moisture lid.",
+    price: 4999.00,
+    category: "home",
+    stockQuantity: 12,
+    minStockThreshold: 3,
+    tags: ["cookware", "kitchen", "cast-iron"],
+  },
+  {
+    sku: "FIT-MAT-001",
+    title: "Eco-Friendly High-Density Yoga Mat",
+    description: "Non-slip 6mm natural tree rubber yoga mat with alignment guide lines and carrying strap.",
+    price: 2499.00,
+    category: "fitness",
+    stockQuantity: 35,
+    minStockThreshold: 5,
+    tags: ["fitness", "yoga", "exercise"],
+  },
+  {
+    sku: "FIT-BOTTLE-002",
+    title: "Insulated Stainless Steel Water Bottle 32oz",
+    description: "Double-wall vacuum insulated flask that keeps drinks cold for 24 hours or piping hot for 12 hours.",
+    price: 1299.00,
+    category: "fitness",
+    stockQuantity: 0,
+    minStockThreshold: 5,
+    tags: ["bottle", "hydration", "sports"],
+  },
+];
+
 const seedData = async (forceClear = true) => {
   try {
     console.log("Connecting to database for seeding...");
@@ -14,6 +107,13 @@ const seedData = async (forceClear = true) => {
     if (!forceClear) {
       const count = await User.countDocuments();
       if (count > 0) {
+        // Migration: Update existing product prices to INR if they are below 500
+        for (const item of productsData) {
+          await Product.updateOne(
+            { sku: item.sku, price: { $lt: 500 } },
+            { $set: { price: item.price } }
+          );
+        }
         return;
       }
       console.log("Database is empty. Running automatic seed setup...");
@@ -58,101 +158,7 @@ const seedData = async (forceClear = true) => {
       },
     });
 
-    console.log("Seeding products...");
-    // 2. Seed Realistic Products
-    const productsData = [
-      {
-        sku: "TECH-HEAD-001",
-        title: "Wireless ANC Over-Ear Headphones",
-        description: "Studio-grade wireless headphones with hybrid active noise cancellation, transparency mode, and 40-hour battery life.",
-        price: 199.99,
-        category: "electronics",
-        stockQuantity: 45,
-        minStockThreshold: 5,
-        tags: ["audio", "bluetooth", "noise-cancelling"],
-      },
-      {
-        sku: "TECH-KEY-002",
-        title: "Mechanical Tenkeyless Gaming Keyboard",
-        description: "Hot-swappable tactile mechanical keyboard with custom RGB backlighting and PBT double-shot keycaps.",
-        price: 89.99,
-        category: "electronics",
-        stockQuantity: 28,
-        minStockThreshold: 5,
-        tags: ["gaming", "keyboard", "rgb"],
-      },
-      {
-        sku: "TECH-MOUSE-003",
-        title: "Ultralight Wireless Gaming Mouse",
-        description: "Ergonomic 58g gaming mouse with 26K DPI optical sensor and ultra-flexible paracord cable.",
-        price: 59.99,
-        category: "electronics",
-        stockQuantity: 4, // Below threshold (Low stock!)
-        minStockThreshold: 5,
-        tags: ["gaming", "mouse", "wireless"],
-      },
-      {
-        sku: "APPAREL-HOOD-001",
-        title: "Heavyweight Cotton Fleece Hoodie",
-        description: "Premium 450 GSM organic cotton oversized hoodie with ribbed cuffs and double-layered hood.",
-        price: 65.0,
-        category: "apparel",
-        stockQuantity: 60,
-        minStockThreshold: 10,
-        tags: ["apparel", "hoodie", "cotton"],
-      },
-      {
-        sku: "APPAREL-TEE-002",
-        title: "Minimalist Crewneck T-Shirt 3-Pack",
-        description: "Breathable 100% combed cotton everyday crewneck t-shirts in neutral earth tones.",
-        price: 34.99,
-        category: "apparel",
-        stockQuantity: 2, // Low stock!
-        minStockThreshold: 10,
-        tags: ["apparel", "tshirt", "basics"],
-      },
-      {
-        sku: "HOME-COFFEE-001",
-        title: "Precision Pour-Over Coffee Kettle",
-        description: "Matte black stainless steel gooseneck kettle with built-in analog thermometer for artisanal brew control.",
-        price: 49.5,
-        category: "home",
-        stockQuantity: 18,
-        minStockThreshold: 4,
-        tags: ["coffee", "kitchen", "kettle"],
-      },
-      {
-        sku: "HOME-ROASTER-002",
-        title: "Cast Iron Dutch Oven 6-Quart",
-        description: "Enameled cast iron dutch oven with superior heat retention and tight-fitting moisture lid.",
-        price: 79.99,
-        category: "home",
-        stockQuantity: 12,
-        minStockThreshold: 3,
-        tags: ["cookware", "kitchen", "cast-iron"],
-      },
-      {
-        sku: "FIT-MAT-001",
-        title: "Eco-Friendly High-Density Yoga Mat",
-        description: "Non-slip 6mm natural tree rubber yoga mat with alignment guide lines and carrying strap.",
-        price: 42.0,
-        category: "fitness",
-        stockQuantity: 35,
-        minStockThreshold: 5,
-        tags: ["fitness", "yoga", "exercise"],
-      },
-      {
-        sku: "FIT-BOTTLE-002",
-        title: "Insulated Stainless Steel Water Bottle 32oz",
-        description: "Double-wall vacuum insulated flask that keeps drinks cold for 24 hours or piping hot for 12 hours.",
-        price: 24.99,
-        category: "fitness",
-        stockQuantity: 0, // Out of stock
-        minStockThreshold: 5,
-        tags: ["bottle", "hydration", "sports"],
-      },
-    ];
-
+    console.log("Seeding products in INR (₹)...");
     const insertedProducts = await Product.insertMany(productsData);
 
     console.log("Generating initial inventory audit records...");
@@ -170,7 +176,7 @@ const seedData = async (forceClear = true) => {
     await InventoryAudit.insertMany(auditLogs);
 
     console.log("\n=========================================================");
-    console.log("✅ Seed Data Generated Successfully!");
+    console.log("✅ Seed Data Generated Successfully (INR ₹)!");
     console.log("---------------------------------------------------------");
     console.log("Admin User:");
     console.log("  Email:    admin@ecommerce.com");
