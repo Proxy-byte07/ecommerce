@@ -1,17 +1,18 @@
 const app = require("../src/app");
 const { connectDB } = require("../src/config/db");
+const seedData = require("../scripts/seed");
 
-// Cache the DB connection across serverless function invocations
-let isConnected = false;
+let isSeeded = false;
 
 module.exports = async (req, res) => {
-  if (!isConnected) {
-    try {
-      await connectDB();
-      isConnected = true;
-    } catch (err) {
-      console.error("Vercel DB Connection Error:", err);
+  try {
+    const conn = await connectDB();
+    if (conn && conn.readyState === 1 && !isSeeded) {
+      await seedData(false);
+      isSeeded = true;
     }
+  } catch (err) {
+    console.error("[Vercel Handler] Connection/Seed Error:", err.message);
   }
   return app(req, res);
 };

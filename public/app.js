@@ -270,7 +270,17 @@ class ApexApp {
       this.updateHeroStats();
     } catch (err) {
       console.error("Failed to load products:", err);
-      this.showToast("Could not load products", "error");
+      const grid = document.getElementById("product-grid");
+      if (grid) {
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 2.5rem; background: #fff5f5; border-radius: 12px; border: 1px solid #feb2b2;">
+            <h3 style="color: #c53030; margin-bottom: 0.5rem;">⚠️ Database Connection Action Required</h3>
+            <p style="color: #742a2a; margin-bottom: 0.75rem;">${err.message}</p>
+            <p style="color: #4a5568; font-size: 0.9rem;">To resolve: Go to your <strong>Vercel Dashboard &rarr; Project Settings &rarr; Environment Variables</strong>, add <code>MONGODB_URI</code> (e.g. from MongoDB Atlas), and set Atlas IP Access to <code>0.0.0.0/0</code>.</p>
+          </div>
+        `;
+      }
+      this.showToast(err.message || "Could not load products", "error");
     }
   }
 

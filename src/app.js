@@ -62,6 +62,19 @@ app.get("/", (req, res) => {
   });
 });
 
+// ─── Database Readiness Guard ─────────────────────────────────────────
+app.use("/api/v1", (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({
+      success: false,
+      message: "Database connection is not established. Please configure MONGODB_URI in your Vercel / Cloud Environment Settings (e.g. MongoDB Atlas connection URI) and verify Network Access IP is set to 0.0.0.0/0.",
+      error: "DATABASE_DISCONNECTED",
+      healthCheck: "/api/health",
+    });
+  }
+  next();
+});
+
 // ─── Mount Domain API Routes ──────────────────────────────────────────────────
 app.use("/api/v1", apiRoutes);
 

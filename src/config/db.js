@@ -3,6 +3,9 @@ const env = require("./env");
 
 let memoryServer = null;
 
+// Disable Mongoose command buffering globally so DB operations fail fast with descriptive errors instead of hanging 10s
+mongoose.set("bufferCommands", false);
+
 /**
  * Connect to MongoDB with automatic in-memory fallback for immediate zero-config testing.
  */
@@ -11,46 +14,40 @@ const connectDB = async () => {
     return mongoose.connection;
   }
 
-  let connectionUri = env.mongoUri;
+  let connectionUri = env.mongoUri || process.env.MONGODB_URI;
 
-  if (!connectionUri) {
-    console.log("[Database] No MONGODB_URI provided. Initializing in-memory MongoDB server...");
+  if (connectionUri) {
+    try {
+      console.log("[Database] Connecting to MongoDB instance...");
+      const conn = await mongoose.connect(connectionUri, {
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000,
+      });
+      console.log(`[Database] MongoDB connected successfully to: ${conn.connection.host}`);
+      return conn;
+    } catch (error) {
+      console.error(`[Database] External MongoDB connection error: ${error.message}`);
+    }
+  }
+
+  // If no external URI or external URI failed, try in-memory server
+  if (!memoryServer) {
+    console.log("[Database] Initializing in-memory MongoDB server...");
     try {
       const { MongoMemoryServer } = require("mongodb-memory-server");
       memoryServer = await MongoMemoryServer.create();
-      connectionUri = memoryServer.getUri();
-      console.log(`[Database] In-memory MongoDB running at: ${connectionUri}`);
+      const fallbackUri = memoryServer.getUri();
+      const conn = await mongoose.connect(fallbackUri, {
+        serverSelectionTimeoutMS: 5000,
+      });
+      console.log(`[Database] In-memory MongoDB running at: ${fallbackUri}`);
+      return conn;
     } catch (err) {
-      console.error("[Database] Failed to launch in-memory MongoDB:", err.message);
-      throw err;
+      console.warn("[Database] In-memory MongoMemoryServer unavailable in serverless environment:", err.message);
     }
   }
 
-  try {
-    const conn = await mongoose.connect(connectionUri, {
-      serverSelectionTimeoutMS: 5000,
-    });
-    console.log(`[Database] MongoDB connected successfully to: ${conn.connection.host || "in-memory"}`);
-    return conn;
-  } catch (error) {
-    console.error(`[Database] MongoDB connection error: ${error.message}`);
-    // If external URI failed, try in-memory fallback in dev mode
-    if (env.mongoUri && !memoryServer && env.nodeEnv === "development") {
-      console.log("[Database] External MongoDB connection failed. Attempting in-memory fallback...");
-      try {
-        const { MongoMemoryServer } = require("mongodb-memory-server");
-        memoryServer = await MongoMemoryServer.create();
-        const fallbackUri = memoryServer.getUri();
-        const conn = await mongoose.connect(fallbackUri);
-        console.log(`[Database] In-memory fallback connected at: ${fallbackUri}`);
-        return conn;
-      } catch (fallbackErr) {
-        console.error("[Database] In-memory fallback also failed:", fallbackErr.message);
-        throw fallbackErr;
-      }
-    }
-    throw error;
-  }
+  return mongoose.connection.readyState === 1 ? mongoose.connection : null;
 };
 
 /**
