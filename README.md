@@ -231,3 +231,35 @@ Run the comprehensive integration test suite:
 npm test
 ```
 This script exercises all 12 major workflows, testing positive paths and asserting proper HTTP 400, 401, 403, and 409 rejection behaviors.
+
+---
+
+## Deployment Guide
+
+### Option 1: Deploy on Render (Recommended for Express Servers)
+
+1. Sign in to [Render.com](https://render.com) and connect your GitHub account.
+2. Click **New +** -> **Web Service**.
+3. Select your repository: `Proxy-byte07/ecommerce`.
+4. Configure the Web Service:
+   - **Environment**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `node server.js`
+5. Add Environment Variables:
+   - `NODE_ENV`: `production`
+   - `JWT_SECRET`: *(Generate a secure secret string)*
+   - `MONGODB_URI`: *(Optional: Your MongoDB Atlas connection string)*
+6. Click **Create Web Service**. Your API will be live with Swagger UI at `https://your-app.onrender.com/api/docs`.
+
+### Option 2: Deploy on Vercel (Serverless)
+
+1. Sign in to [Vercel](https://vercel.com) and click **Add New** -> **Project**.
+2. Import repository `Proxy-byte07/ecommerce`.
+3. Add Environment Variables:
+   - `NODE_ENV`: `production`
+   - `JWT_SECRET`: *(Generate a secure secret string)*
+   - `MONGODB_URI`: *(Your MongoDB Atlas connection URI)*
+4. Click **Deploy**. Vercel will automatically detect `vercel.json` and deploy the serverless function.
+
+---
+
